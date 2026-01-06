@@ -21,14 +21,31 @@ public function create()
     return view('restaurants.create', compact('cuisines'));
 }
 
-    public function index()
+public function index(Request $request)
 {
-    $restaurants = \App\Models\Restaurant::with('cuisine')
-        ->orderBy('name')
-        ->get();
+    $cuisines = \App\Models\Cuisine::orderBy('name')->get();
 
-    return view('restaurants.index', compact('restaurants'));
+    $query = \App\Models\Restaurant::with('cuisine');
+
+    
+    if ($request->filled('cuisine')) {
+        $query->whereHas('cuisine', function ($q) use ($request) {
+            $q->where('slug', $request->cuisine);
+        });
+    }
+
+    
+    $allowedSorts = ['name', 'rating', 'created_at'];
+    $sort = in_array($request->get('sort'), $allowedSorts) ? $request->get('sort') : 'name';
+
+    $dir = strtolower($request->get('dir', 'asc'));
+    $dir = in_array($dir, ['asc', 'desc']) ? $dir : 'asc';
+
+    $restaurants = $query->orderBy($sort, $dir)->get();
+
+    return view('restaurants.index', compact('restaurants', 'cuisines', 'sort', 'dir'));
 }
+
 
 public function store(Request $request)
 {

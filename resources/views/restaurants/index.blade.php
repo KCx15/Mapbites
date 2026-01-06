@@ -6,46 +6,41 @@
     <a class="btn btn-primary" href="{{ route('restaurants.create') }}">Add Restaurant</a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-striped table-hover mb-0">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Cuisine</th>
-                    <th>Rating</th>
-                    <th>Address</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            @forelse($restaurants as $restaurant)
-                <tr>
-                    <td>
-                        <a href="{{ route('restaurants.show', $restaurant) }}">
-                            {{ $restaurant->name }}
-                        </a>
-                        <div class="text-muted small"><code>{{ $restaurant->slug }}</code></div>
-                    </td>
-                    <td>{{ $restaurant->cuisine?->name }}</td>
-                    <td>{{ number_format((float)$restaurant->rating, 1) }}</td>
-                    <td>{{ $restaurant->address }}</td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('restaurants.edit', $restaurant) }}">Edit</a>
-
-                        <form class="d-inline" method="POST" action="{{ route('restaurants.destroy', $restaurant) }}"
-                              onsubmit="return confirm('Delete this restaurant?');">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="5" class="text-center py-4">No restaurants yet.</td></tr>
-            @endforelse
-            </tbody>
-        </table>
+<form class="row g-2 align-items-end mb-3" method="GET" action="{{ route('restaurants.index') }}">
+    <div class="col-md-4">
+        <label class="form-label">Cuisine</label>
+        <select name="cuisine" class="form-select">
+            <option value="">All cuisines</option>
+            @foreach($cuisines as $cuisine)
+                <option value="{{ $cuisine->slug }}" @selected(request('cuisine') === $cuisine->slug)>
+                    {{ $cuisine->name }}
+                </option>
+            @endforeach
+        </select>
     </div>
-</div>
+
+    <div class="col-md-4">
+        <label class="form-label">Sort by</label>
+        <select name="sort" class="form-select">
+            <option value="name" @selected(request('sort','name')==='name')>Name</option>
+            <option value="rating" @selected(request('sort')==='rating')>Rating</option>
+            <option value="created_at" @selected(request('sort')==='created_at')>Newest</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label">Direction</label>
+        <select name="dir" class="form-select">
+            <option value="asc" @selected(request('dir','asc')==='asc')>Asc</option>
+            <option value="desc" @selected(request('dir')==='desc')>Desc</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-dark w-100" type="submit">Apply</button>
+        <a class="btn btn-outline-secondary w-100" href="{{ route('restaurants.index') }}">Reset</a>
+    </div>
+</form>
+
+@include('restaurants._table', ['restaurants' => $restaurants])
 @endsection
