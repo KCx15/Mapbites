@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 use App\Models\Cuisine;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
+
 
 class RestaurantController extends Controller
 {
@@ -62,6 +65,19 @@ public function store(Request $request)
     ]);
 
     $slug = Str::slug($validated['name']);
+    $geo = $this->geocodeAddress($validated['address']);
+
+if (!$geo) {
+    throw ValidationException::withMessages([
+        'address' => 'Address not found. Please enter a more specific address.',
+    ]);
+}
+
+if (empty($validated['lat']) || empty($validated['lng'])) {
+    $validated['lat'] = $geo['lat'];
+    $validated['lng'] = $geo['lng'];
+}
+
     $base = $slug;
     $i = 2;
     while (\App\Models\Restaurant::where('slug', $slug)->exists()) {
@@ -74,7 +90,10 @@ public function store(Request $request)
         'rating' => $validated['rating'] ?? 0.0,
     ]);
 
-    return redirect()->route('restaurants.index')->with('success', 'Restaurant created successfully.');
+  return redirect()->route('restaurants.index')
+    ->with('success', 'Restaurant created successfully.')
+    ->with('matched_address', $geo['display_name'] ?? null);
+
 }
 
 public function edit(\App\Models\Restaurant $restaurant)
@@ -96,6 +115,21 @@ public function update(Request $request, \App\Models\Restaurant $restaurant)
     ]);
 
     $slug = Str::slug($validated['name']);
+
+    $geo = $this->geocodeAddress($validated['address']);
+
+if (!$geo) {
+    throw ValidationException::withMessages([
+        'address' => 'Address not found. Please enter a more specific address.',
+    ]);
+}
+
+
+if (empty($validated['lat']) || empty($validated['lng'])) {
+    $validated['lat'] = $geo['lat'];
+    $validated['lng'] = $geo['lng'];
+}
+
     $base = $slug;
     $i = 2;
     while (\App\Models\Restaurant::where('slug', $slug)->where('id', '!=', $restaurant->id)->exists()) {
@@ -108,7 +142,9 @@ public function update(Request $request, \App\Models\Restaurant $restaurant)
         'rating' => $validated['rating'] ?? $restaurant->rating,
     ]);
 
-    return redirect()->route('restaurants.index')->with('success', 'Restaurant updated successfully.');
+      return redirect()->route('restaurants.index')
+    ->with('success', 'Restaurant created successfully.')
+    ->with('matched_address', $geo['display_name'] ?? null);
 }
 
 public function destroy(\App\Models\Restaurant $restaurant)
@@ -116,5 +152,32 @@ public function destroy(\App\Models\Restaurant $restaurant)
     $restaurant->delete();
     return redirect()->route('restaurants.index')->with('success', 'Restaurant deleted successfully.');
 }
+private function geocodeAddress(string $address): ?array
+{
+    $response = Http::withHeaders([
+        'User-Agent' => 'MapBites/1.0 (student project)',
+    ])->get('https://nominatim.openstreetmap.org/search', [
+        'q' => $address,
+        'format' => 'json',
+        'limit' => 1,
+    ]);
+
+    if (!$response->successful()) {
+        return null;
+    }
+
+    $data = $response->json();
+
+    if (!is_array($data) || count($data) === 0) {
+        return null;
+    }
+
+    return [
+        'lat' => (float) $data[0]['lat'],
+        'lng' => (float) $data[0]['lon'],
+        'display_name' => $data[0]['display_name'] ?? null,
+    ];
+}
+
 
 }
