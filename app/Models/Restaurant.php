@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\RestaurantImage;
 
 class Restaurant extends Model
 {
@@ -28,5 +29,10 @@ class Restaurant extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    public function images()
+    {
+        return $this->hasmany(RestaurantImage::class);
     }
 }

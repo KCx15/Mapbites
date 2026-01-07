@@ -11,8 +11,10 @@ class RestaurantController extends Controller
 
 public function show(\App\Models\Restaurant $restaurant)
 {
+    $restaurant->load(['cuisine', 'images']);
     return view('restaurants.show', compact('restaurant'));
 }
+
 
 
 public function create()
