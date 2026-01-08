@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CuisineController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\RestaurantImageController;
+use App\Http\Controllers\MapController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,3 +21,5 @@ Route::post('restaurants/{restaurant}/images', [RestaurantImageController::class
 
 Route::delete('restaurants/{restaurant}/images/{image}', [RestaurantImageController::class, 'destroy'])
     ->name('restaurants.images.destroy');
+
+Route::get('/map', [MapController::class, 'index'])->name('map.index');
