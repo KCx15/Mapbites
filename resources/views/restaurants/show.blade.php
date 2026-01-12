@@ -111,6 +111,53 @@
 @endforelse
 </div>
 
+@if($restaurant->lat && $restaurant->lng)
+    <hr class="my-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h5 mb-0">Location</h2>
+
+        <a class="btn btn-sm btn-outline-primary"
+           target="_blank"
+           href="https://www.google.com/maps?q={{ $restaurant->lat }},{{ $restaurant->lng }}">
+            Open in Google Maps
+        </a>
+    </div>
+
+    <div id="restaurantMap" style="height: 350px;" class="rounded shadow-sm"></div>
+
+    {{-- Leaflet CSS --}}
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    {{-- Leaflet JS --}}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const lat = parseFloat(@json($restaurant->lat));
+            const lng = parseFloat(@json($restaurant->lng));
+
+            const map = L.map('restaurantMap').setView([lat, lng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            L.marker([lat, lng]).addTo(map)
+                .bindPopup(
+                    `<strong>{{ addslashes($restaurant->name) }}</strong><br>{{ addslashes($restaurant->address) }}`
+                )
+                .openPopup();
+        });
+    </script>
+@else
+    <div class="alert alert-warning mt-3">
+        No coordinates available for this restaurant yet.
+        Edit the address to generate coordinates.
+    </div>
+@endif
+
 
 <div class="mt-3">
     <a class="btn btn-outline-secondary" href="{{ route('restaurants.edit', $restaurant) }}">Edit</a>
