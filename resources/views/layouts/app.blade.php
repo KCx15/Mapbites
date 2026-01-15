@@ -6,20 +6,53 @@
     <title>MapBites</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/mapbites.css') }}">
+
+
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="/">MapBites</a>
-        <a class="btn btn-outline-light btn-sm" href="{{ route('cuisines.index') }}">Cuisines</a>
+
+       
+        <a class="navbar-brand fw-bold" href="{{ route('restaurants.index') }}">
+            🍴 MapBites
+        </a>
+
+        
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('restaurants.*') ? 'active' : '' }}"
+                   href="{{ route('restaurants.index') }}">
+                    Restaurants
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('cuisines.*') ? 'active' : '' }}"
+                   href="{{ route('cuisines.index') }}">
+                    Cuisines
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('map.index') ? 'active' : '' }}"
+                   href="{{ route('map.index') }}">
+                    Map
+                </a>
+            </li>
+        </ul>
+
     </div>
 </nav>
 
-<div class="container">
-      @include('partials.alerts')
+
+<main class="container py-4">
+    @include('partials.alerts')
     @yield('content')
-</div>
+</main>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
